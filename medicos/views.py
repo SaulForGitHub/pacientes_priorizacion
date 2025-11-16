@@ -357,7 +357,7 @@ def singout(request):
     logout(request)
     return render(request, 'logout.html')
 
-@login_required
+
 def signin(request):
     """
     Handles user authentication and login.
