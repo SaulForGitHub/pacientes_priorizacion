@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-light min-vh-100 d-flex flex-column">
+  <!-- Encabezado -->
+  <header class="bg-dark text-white py-4 mb-4 shadow-sm">
+    <div class="container">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <div>
+          <h1 class="h3 mb-0">Sistema de Priorización de Pacientes</h1>
+          <p class="mb-0">Gestión eficiente y transparente de listas de espera quirúrgica</p>
+        </div>
+        {% if user.is_authenticated %}
+        <div class="text-md-end mt-3 mt-md-0">
+          <p class="mb-0"><strong>Usuario:</strong> {{ user.get_full_name|default:user.username }}</p>
+          <p class="mb-0"><strong>Último acceso:</strong> {{ user.last_login|date:'d/m/Y H:i' }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="container flex-grow-1">
+    {% if user.is_authenticated %}
+      <div class="row g-4">
+        <!-- Pacientes en espera -->
+        <div class="col-sm-6 col-lg-3">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+              <i class="bi bi-people display-5 text-primary mb-2"></i>
+              <h5 class="card-title">Pacientes en espera</h5>
+              <p class="fs-3 fw-bold mb-0">{{ pacientes_espera_count }}</p>
+            </div>
+          </div>
+        </div>
+        <!-- Tiempo promedio -->
+        <div class="col-sm-6 col-lg-3">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+              <i class="bi bi-hourglass-split display-5 text-warning mb-2"></i>
+              <h5 class="card-title">Tiempo promedio en espera</h5>
+              <p class="fs-3 fw-bold mb-0">{{ promedio_espera }} días</p>
+            </div>
+          </div>
+        </div>
+        <!-- Operados este mes -->
+        <div class="col-sm-6 col-lg-3">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+              <i class="bi bi-heart-pulse display-5 text-success mb-2"></i>
+              <h5 class="card-title">Pacientes operados (-1 mes)</h5>
+              <p class="fs-3 fw-bold mb-0">{{ operados_mes_count }}</p>
+            </div>
+          </div>
+        </div>
+        <!-- Promedio de puntaje -->
+        <div class="col-sm-6 col-lg-3">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+              <i class="bi bi-graph-up-arrow display-5 text-danger mb-2"></i>
+              <h5 class="card-title">Promedio de puntaje</h5>
+              <p class="fs-3 fw-bold mb-0">{{ promedio_puntaje }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px;">
+        <h2 class="mb-3 text-secondary">Iniciar sesión para acceder a la información del sistema</h2>
+        <a href="/signin/" class="btn btn-primary btn-lg">Iniciar sesión</a>
+      </div>
+    {% endif %}
+  </main>
+  <footer class="text-center text-muted py-4 mt-5 small">
+    <div class="text-center text-muted mt-3">
+        <small>Optimizado para el navegador Google Chrome.</small>
+    </div>
+  </footer>
+</div>
+{% endblock %}

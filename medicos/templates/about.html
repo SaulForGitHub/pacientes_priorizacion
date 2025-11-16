@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-body">
+                    <h1 class="display-4 text-center mb-4 text-dark">Sistema de Gestión y Priorización de Pacientes</h1>
+                    <p class="lead text-center mb-4">
+                        Plataforma integral para la gestión de listas de espera quirúrgica, priorizando pacientes de forma <strong>justa, transparente y trazable</strong> según criterios clínicos, sociales y temporales.
+                    </p>
+                    <hr>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h2 class="h5 text-success">Objetivo General</h2>
+                            <p>
+                                Gestionar la lista de espera quirúrgica determinando dinámicamente la <strong>prioridad de atención</strong> de cada paciente, con criterios configurables y trazabilidad total de los cambios.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h3 class="h5 text-success">Componentes principales</h3>
+                            <ul>
+                                <li><strong>Registro de pacientes:</strong> Datos personales, estado (<code>EN_ESPERA</code>/<code>OPERADO</code>), fechas clave.</li>
+                                <li><strong>Puntaje de priorización:</strong> Cálculo dinámico por criterios clínicos, sociales y tiempo en lista.</li>
+                                <li><strong>Historial y trazabilidad:</strong> Registro de cada cambio con usuario, fecha y valores.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row g-4">                        
+                        <div class="col-md-6">
+                            <h3 class="h6 text-secondary">Listado y ranking</h3>
+                            <ul>
+                                <li>Listado ordenado por <strong>puntaje total</strong> (prioridad descendente).</li>
+                                <li>Ranking recalculado dinámicamente ante cambios o permanencia.</li>
+                            </ul>
+                        </div>
+                            <div class="col-md-6">
+                            <h2 class="h6 text-secondary">Tecnología Base</h2>
+                            <ul class="mb-0">
+                                <li><strong>Backend:</strong> Django (Python)</li>
+                                <li><strong>Base de datos:</strong> SQLite (desarrollo), PostgreSQL (producción)</li>
+                                <li><strong>Frontend:</strong> HTMX, Alpine.js, Bootstrap</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col">
+                            <h3 class="h6 text-secondary">Objetivo final</h3>
+                            <p>
+                                Garantizar que la asignación de turnos quirúrgicos sea <strong>objetiva, configurable y auditable</strong>, reduciendo la discrecionalidad y manteniendo la trazabilidad para revisión clínica y administrativa.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center text-muted mt-3">
+                <small>Optimizado para el navegador Google Chrome.</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

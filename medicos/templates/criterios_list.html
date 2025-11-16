@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<title>Criterios clínicos y sociales</title>
+
+<h2 class="display-1 text-center">Criterios clínicos</h2>
+{% if criterios_clinicos %}
+    {% regroup criterios_clinicos by eje as ejes_clinicos %}
+    <div class="text-center mb-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    <table class="table table-striped" cellpadding="5" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Descripción</th>
+                                <th>Puntaje</th>
+                                <th>Cantidad de días</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for eje in ejes_clinicos %}
+                            <tr>
+                                <td colspan="3" style="background:#343a40; color:#fff; font-weight:bold; text-align:left;">{{ eje.grouper.descripcion }}</td>
+                            </tr>
+                            {% for criterio in eje.list %}
+                            <tr>
+                                <td>{{ criterio.descripcion }}</td>
+                                <td>{{ criterio.puntaje }}</td>
+                                <td>{{ criterio.max_dias }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <p class="text-center text-muted mt-4">No hay criterios clínicos registrados.</p>
+{% endif %}
+
+<h2 class="display-1 text-center">Criterios sociales</h2>
+{% if criterios_sociales %}
+    {% regroup criterios_sociales by eje as ejes_sociales %}
+    <div class="text-center mb-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    <table class="table table-striped" cellpadding="5" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Descripción</th>
+                                <th>Puntaje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for eje in ejes_sociales %}
+                            <tr>
+                                <td colspan="2" style="background:#343a40; color:#fff; font-weight:bold; text-align:left;">{{ eje.grouper.descripcion }}</td>
+                            </tr>
+                            {% for criterio in eje.list %}
+                            <tr>
+                                <td>{{ criterio.descripcion }}</td>
+                                <td>{{ criterio.puntaje }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <p class="text-center text-muted mt-4">No hay criterios sociales registrados.</p>
+{% endif %}
+{% endblock %}

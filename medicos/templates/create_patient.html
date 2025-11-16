@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <title>Creación de pacientes</title>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h2 class="display-1 text-center">Crear nuevo paciente</h2>
+                <script id="ejesClinicosData" type="application/json">[{% for eje in ejes_clinicos %}{{ eje.grouper.id }}{% if not forloop.last %}, {% endif %}{% endfor %}]</script>
+                <script id="ejesSocialesData" type="application/json">[{% for eje in ejes_sociales %}{{ eje.grouper.id }}{% if not forloop.last %}, {% endif %}{% endfor %}]</script>
+                <script src="/static/js/formPacienteData.js"></script>
+
+                {% if message %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endif %}
+
+                {% if form.errors %}
+                    <ul class="alert alert-danger">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <form action="/patients/create" method="post"
+                    x-data="formPacienteData({
+                        criteriosClinicos: true,
+                        criteriosSociales: true,
+                        ejesClinicosDataId: 'ejesClinicosData',
+                        ejesSocialesDataId: 'ejesSocialesData'
+                    })"
+                    x-init="init()"
+                    @submit.prevent="handleSubmit($event)"
+                    class="card card-body mt-4 mb-4 shadow-sm">
+
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_rut">(*) RUT:</label>
+                        <input type="text"
+                            name="rut"
+                            id="id_rut"
+                            x-model="rut"
+                            @input="validateRut()"
+                            :class="rutError ? 'border border-danger' : ''"
+                            class="form-control"
+                            required>
+                        <div id="rut-error-msg" x-html="rutError" style="color:red; font-size:0.9em; margin-top:2px;"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_nombre">(*) Nombre:</label>
+                        <input type="text" name="nombre" id="id_nombre" x-model="nombre"
+                            @input="validateNombre()"
+                            :class="nombreError ? 'border border-danger' : ''"
+                            class="form-control" required>
+                        <span x-show="nombreError" x-text="nombreError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sexo">(*) Sexo:</label>
+                        <select name="sexo" id="sexo" class="form-control form-select">
+                            <option value="M" {% if form.sexo.value == "M" %}selected{% endif %}>Mujer</option>
+                            <option value="H" {% if form.sexo.value == "H" %}selected{% endif %}>Hombre</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_fecha_nacimiento">(*) Fecha de Nacimiento:</label>
+                        <div class="d-flex flex-row gap-2" style="gap: 10px;">
+                            <select name="dia" id="dia" class="form-control form-select" style="max-width: 90px;">
+                                <option value="">Día</option>
+                                {% for d in dias %}
+                                <option value="{{ d }}" {% if request.POST.dia == d|stringformat:'s' %}selected{% endif %}>{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="mes" id="mes" class="form-control form-select" style="max-width: 110px;">
+                                <option value="">Mes</option>
+                                {% for m in meses %}
+                                <option value="{{ m }}" {% if request.POST.mes == m|stringformat:'s' %}selected{% endif %}>{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="anio" id="anio" class="form-control form-select" style="max-width: 110px;">
+                                <option value="">Año</option>
+                                {% for y in anios %}
+                                <option value="{{ y }}" {% if request.POST.anio == y|stringformat:'s' %}selected{% endif %}>{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_telefono">Teléfono(s):</label>
+                        <input type="text" name="telefono" id="id_telefono" x-model="telefono"
+                            @input="validateTelefono()"
+                            :class="telefonoError ? 'border border-danger' : ''"
+                            class="form-control">
+                        <span x-show="telefonoError" x-text="telefonoError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_correo">Correo electrónico:</label>
+                        <input type="email" name="correo" id="id_correo" x-model="correo"
+                            @input="validateCorreo()"
+                            :class="correoError ? 'border border-danger' : ''"
+                            class="form-control">
+                        <span x-show="correoError" x-text="correoError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_direccion">Dirección:</label>
+                        <input type="text" name="direccion" id="id_direccion" x-model="direccion"
+                            @input="validateDireccion()"
+                            :class="direccionError ? 'border border-danger' : ''"
+                            class="form-control">
+                        <span x-show="direccionError" x-text="direccionError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
+                    </div>                    
+
+                    <div class="mb-3">
+                        <label for="id_comentario">(*) Comentario:</label>
+                        <textarea name="comentario" id="id_comentario" x-model="comentario"
+                            @input="validateComentario()"
+                            :class="comentarioError ? 'border border-danger' : ''"
+                            class="form-control" required cols="40" rows="5"></textarea>
+                        <span x-show="comentarioError" x-text="comentarioError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
+                    </div>
+
+                    <h3 class="display-1 text-center">Criterios clínicos</h3>
+                    {% if criterios_clinicos %}
+                        {% regroup criterios_clinicos by eje as ejes_clinicos %}
+                        <div class="text-center mb-4">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-md-10 offset-md-1">
+                                        <table class="table table-striped" cellpadding="5" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Descripción</th>
+                                                    <th>Puntaje</th>
+                                                    <th>Cantidad de días</th>
+                                                    <th>Seleccionar</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for eje in ejes_clinicos %}
+                                                <tr>
+                                                    <td colspan="4" style="background:#343a40; color:#fff; font-weight:bold; text-align:left;">{{ eje.grouper.descripcion }}</td>
+                                                </tr>
+                                                {% for criterio in eje.list %}
+                                                <tr>
+                                                    <td>{{ criterio.descripcion }}</td>
+                                                    <td>{{ criterio.puntaje }}</td>
+                                                    <td>{{ criterio.max_dias }}</td>
+                                                    <td style="text-align:center;">
+                                                        <input type="radio" name="criterio_clinico_{{ eje.grouper.id }}" value="{{ criterio.puntaje }}"
+                                                            @change="criteriosClinicos[{{ eje.grouper.id }}] = $event.target.value" {% if forloop.first %}required{% endif %}>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% endfor %}
+                                            <tr>
+                                                <td colspan="4">
+                                                    <span x-show="criteriosClinicosError && intentadoEnviar" x-text="criteriosClinicosError" style="color:red; font-size:0.9em;"></span>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted mt-4">No hay criterios clínicos registrados.</p>
+                    {% endif %}
+
+
+                    <h3 class="display-1 text-center">Criterios sociales</h3>
+                    {% if criterios_sociales %}
+                        {% regroup criterios_sociales by eje as ejes_sociales %}
+                        <div class="text-center mb-4">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-md-10 offset-md-1">
+                                        <table class="table table-striped" cellpadding="5" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Descripción</th>
+                                                    <th>Puntaje</th>
+                                                    <th>Cantidad de días</th>
+                                                    <th>Seleccionar</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for eje in ejes_sociales %}
+                                                <tr>
+                                                    <td colspan="4" style="background:#343a40; color:#fff; font-weight:bold;">{{ eje.grouper.descripcion }}</td>
+                                                </tr>
+                                                {% for criterio in eje.list %}
+                                                <tr>
+                                                    <td>{{ criterio.descripcion }}</td>
+                                                    <td>{{ criterio.puntaje }}</td>
+                                                    <td>-</td>
+                                                    <td style="text-align:center;">
+                                                        <input type="radio" name="criterio_social_{{ eje.grouper.id }}" value="{{ criterio.puntaje }}"
+                                                            @change="criteriosSociales[{{ eje.grouper.id }}] = $event.target.value" {% if forloop.first %}required{% endif %}>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% endfor %}
+                                            <tr>
+                                                <td colspan="4">
+                                                    <span x-show="criteriosSocialesError && intentadoEnviar" x-text="criteriosSocialesError" style="color:red; font-size:0.9em;"></span>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted mt-4">No hay criterios sociales registrados.</p>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary center" style="margin-top:20px;">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

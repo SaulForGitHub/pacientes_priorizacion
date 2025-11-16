@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        .navbar-nav .nav-link.active {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+    </style>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+            <div class="container">
+                <!-- <a class="navbar-brand" href="#">Navbar</a> -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" aria-current="page" href="/">Home</a>
+                        </li>
+                        {% if user.is_authenticated %}
+                        <li class="nav-item">
+                        <a class="nav-link {% if request.path|slice:':17' == '/patients/waiting' or from_list|default:'' == 'waiting' %}active{% endif %}" href="/patients/waiting/">Pacientes en espera</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/patients/create' %}active{% endif %}" href="/patients/create">Crear Paciente</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/patients/search/' %}active{% endif %}" href="/patients/search/">Buscar Paciente</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/patients/operated/' or from_list|default:'' == 'operated' %}active{% endif %}" href="/patients/operated/">Pacientes operados</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/patients/deleted/' or from_list|default:'' == 'deleted' %}active{% endif %}" href="/patients/deleted/">Ingresos desestimados</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/rangos-tiempo/' %}active{% endif %}" href="/rangos-tiempo/">Rangos de tiempo</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/criterios/' %}active{% endif %}" href="/criterios/">Criterios clínicos y sociales</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == '/about/' %}active{% endif %}" href="/about/">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == '/logout/' %}active{% endif %}" href="/logout/">Logout</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/signin/' %}active{% endif %}" href="/signin/">Login</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+    </header>
+    <main>
+        {% block content %}
+
+        {% endblock %}
+    </main>
+    <footer>
+        <p></p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

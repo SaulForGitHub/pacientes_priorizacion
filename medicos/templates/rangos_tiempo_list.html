@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<title>Rangos de tiempo</title>
+
+<h2 class="display-1 text-center">Rangos de tiempo</h2>
+<div class="text-center mb-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <table class="table table-striped" cellpadding="5" cellspacing="0">
+                    <thead>
+                        <tr style="background:#343a40; color:#fff;">
+                            <th>ID</th>
+                            <th>Descripción</th>
+                            <th>Días mínimo</th>
+                            <th>Días máximo</th>
+                            <th>Puntaje</th>
+                            <th>Creado en</th>
+                            <th>Actualizado en</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for rango in rangos %}
+                        <tr>
+                            <td>{{ rango.id }}</td>
+                            <td>{{ rango.descripcion }}</td>
+                            <td>{{ rango.dias_min }}</td>
+                            <td>{{ rango.dias_max }}</td>
+                            <td>{{ rango.puntaje }}</td>
+                            <td>{{ rango.creado_en|date:'Y-m-d' }}</td>
+                            <td>{{ rango.actualizado_en|date:'Y-m-d' }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7" class="text-center text-muted mt-4">No hay rangos de tiempo registrados.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

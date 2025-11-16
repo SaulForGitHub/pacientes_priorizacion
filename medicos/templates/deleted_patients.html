@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+
+<title>Ingresos desestimados</title>
+
+<div class="text-center mb-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <h2 class="display-1 text-center">Ingresos desestimados</h2>
+                {% if message %}
+                <p style="color: red;">{{ message }}</p>
+                {% endif %}
+                {% if patients %}
+                    <table class="table table-striped" cellpadding="5" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>RUT</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for patient in patients %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ patient.nombre }}</td>
+                                <td>{{ patient.rut|rut_format }}</td>
+                                <td>
+                                    <form method="get" action="{% url 'patient_detail' patient.id %}">
+                                        <input type="hidden" name="from_list" value="deleted">
+                                        <button type="submit" class="btn btn-primary">Ver detalle</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-center text-muted mt-4">
+                        No hay ingresos desestimados.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

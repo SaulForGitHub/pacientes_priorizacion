@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block content %}
+
+<title>Búsqueda de pacientes</title>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <script src="/static/js/formPacienteData.js"></script>
+
+            <h2 class="display-1 text-center">Búsqueda de Pacientes</h2>           
+
+            <form method="get" action="" class="card card-body mt-4 mb-4 shadow-sm">
+                <div class="row g-2 mb-2 align-items-end">
+                    <div class="col-md-4">
+                        <label for="search_field" class="form-label">Buscar por:</label>
+                        <select name="search_field" id="search_field" class="form-control form-select">
+                            <option value="rut">RUT</option>
+                            <option value="nombre">Nombre</option>
+                            <option value="email">E-mail</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="search_value" class="form-label">Valor:</label>
+                        <input type="text" name="search_value" id="search_value" class="form-control" placeholder="Ingrese valor de búsqueda" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="estado_field" class="form-label">Estado:</label>
+                        <select name="estado_field" id="estado_field" class="form-control form-select">
+                            <option value="todos">Todos</option>
+                            <option value="EN_ESPERA">En Espera</option>
+                            <option value="OPERADO">Operado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label" style="visibility:hidden;">Buscar</label>
+                        <button type="submit" class="btn btn-primary d-flex justify-content-center align-items-center text-nowrap">Buscar</button>
+                    </div>
+                </div>
+            </form>
+
+            {% if pacientes|length > 1 and not paciente %}
+
+            <h3 class="display-6 text-center">Resultados de la búsqueda</h3>
+            <div class="text-center mb-4">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-striped" cellpadding="5" cellspacing="0">
+                                <thead>
+                                    <tr style="background:#343a40; color:#fff;">
+                                        <th>RUT</th>
+                                        <th>Nombre</th>
+                                        <th>Estado</th>
+                                        <th>Dirección</th>
+                                        <th>E-mail</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in pacientes %}
+                                    <tr>
+                                        <td>{{ p.rut|rut_format }}</td>
+                                        <td>{{ p.nombre }}</td>
+                                        <td>{{ p.estado }}</td>
+                                        <td>{{ p.direccion }}</td>
+                                        <td>{{ p.correo }}</td>
+                                        <td>
+                                            <form method="get" action="">
+                                                <input type="hidden" name="search_field" value="{{ request.GET.search_field }}">
+                                                <input type="hidden" name="search_value" value="{{ request.GET.search_value }}">
+                                                <input type="hidden" name="estado_field" value="{{ request.GET.estado_field }}">
+                                                <input type="hidden" name="selected_id" value="{{ p.id }}">
+                                                <button type="submit" class="btn btn-primary btn-sm">Ver detalle</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% elif paciente %}
+
+            <h3 class="display-6 text-center">Datos del Paciente</h3>
+
+            <form method="post" 
+                action="{% url 'patient_detail' paciente.id %}" 
+                class="card card-body mt-4 mb-4 shadow-sm"
+                x-data="formPacienteData({
+                    initial: {
+                        rut: '{{ form.rut.value|default_if_none:""|default:"" }}',
+                        nombre: '{{ form.nombre.value|default_if_none:""|default:"" }}',
+                        correo: '{{ form.correo.value|default_if_none:""|default:"" }}',
+                        telefono: '{{ form.telefono.value|default_if_none:""|default:"" }}',
+                        direccion: '{{ form.direccion.value|default_if_none:""|default:"" }}',
+                        comentario: '{{ form.comentario.value|default_if_none:""|default:"" }}'
+                    },
+                    pacienteId: '{{ paciente.id|default:"" }}'
+                })"
+                x-init="init()"
+                @submit.prevent="handleSubmit($event)">
+
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="id_rut">(*) RUT:</label>
+                    <input type="text"
+                        name="rut"
+                        id="id_rut"
+                        x-model="rut"
+                        @input="validateRut()"
+                        :class="rutError ? 'border border-danger' : ''"
+                        class="form-control"
+                        required
+                        only_numbers
+                        value="{{ form.rut.value|default_if_none:'' }}">
+                    <div id="rut-error-msg" x-html="rutError" style="color:red; font-size:0.9em; margin-top:2px;"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_nombre">(*) Nombre:</label>
+                    <input type="text" name="nombre" id="id_nombre" x-model="nombre" value="{{ form.nombre.value|default_if_none:'' }}"
+                        @input="validateNombre()"
+                        :class="nombreError ? 'border border-danger' : ''"
+                        class="form-control" required>
+                    <span x-show="nombreError" x-text="nombreError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_sexo">(*) Sexo:</label>
+                    <select name="sexo" id="sexo" class="form-control form-select">
+                        <option value="M" {% if form.sexo.value == "M" %}selected{% endif %}>Mujer</option>
+                        <option value="H" {% if form.sexo.value == "H" %}selected{% endif %}>Hombre</option>
+                    </select>
+                </div>
+
+                    <div class="mb-3">
+                        <label for="id_fecha_nacimiento">(*) Fecha de Nacimiento:</label>
+                        <div class="d-flex flex-row gap-2" style="gap: 10px;">
+                            <select name="dia" id="dia" class="form-control form-select" style="max-width: 90px;">
+                                <option value="">Día</option>
+                                {% for d in dias %}
+                                <option value="{{ d }}"
+                                    {% if request.POST.dia %}
+                                        {% if request.POST.dia == d|stringformat:'s' %}selected{% endif %}
+                                    {% else %}
+                                        {% if form.instance.fecha_nacimiento and form.instance.fecha_nacimiento.day == d %}selected{% endif %}
+                                    {% endif %}
+                                >{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="mes" id="mes" class="form-control form-select" style="max-width: 110px;">
+                                <option value="">Mes</option>
+                                {% for m in meses %}
+                                <option value="{{ m }}"
+                                    {% if request.POST.mes %}
+                                        {% if request.POST.mes == m|stringformat:'s' %}selected{% endif %}
+                                    {% else %}
+                                        {% if form.instance.fecha_nacimiento and form.instance.fecha_nacimiento.month == m %}selected{% endif %}
+                                    {% endif %}
+                                >{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="anio" id="anio" class="form-control form-select" style="max-width: 110px;">
+                                <option value="">Año</option>
+                                {% for y in anios %}
+                                <option value="{{ y }}"
+                                    {% if request.POST.anio %}
+                                        {% if request.POST.anio == y|stringformat:'s' %}selected{% endif %}
+                                    {% else %}
+                                        {% if form.instance.fecha_nacimiento and form.instance.fecha_nacimiento.year == y %}selected{% endif %}
+                                    {% endif %}
+                                >{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                
+                <div class="mb-3">
+                        <label for="id_telefono">Teléfono(s):</label>
+                        <input type="text" name="telefono" id="id_telefono" x-model="telefono" value="{{ form.telefono.value|default_if_none:'' }}"
+                            @input="validateTelefono()"
+                            :class="telefonoError ? 'border border-danger' : ''"
+                            class="form-control">
+                        <span x-show="telefonoError" x-text="telefonoError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_correo">Correo electrónico:</label>
+                    <input type="email" name="correo" id="id_correo" x-model="correo" value="{{ form.correo.value|default_if_none:'' }}"
+                        @input="validateCorreo()"
+                        :class="correoError ? 'border border-danger' : ''"
+                        class="form-control">
+                    <span x-show="correoError" x-text="correoError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_direccion">Dirección:</label>
+                    <input type="text" name="direccion" id="id_direccion" x-model="direccion" value="{{ form.direccion.value|default_if_none:'' }}"
+                        @input="validateDireccion()"
+                        :class="direccionError ? 'border border-danger' : ''"
+                        class="form-control">
+                    <span x-show="direccionError" x-text="direccionError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_comentario">(*) Comentario:</label>
+                    <textarea name="comentario" id="id_comentario" x-model="comentario"
+                        @input="validateComentario()"
+                        :class="comentarioError ? 'border border-danger' : ''"
+                        class="form-control" required cols="40" rows="5"></textarea>
+                    <span x-show="comentarioError" x-text="comentarioError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
+                </div>
+
+                {% if form.estado %}
+                <label for="estado">(*) Estado:</label>
+                <select name="estado" id="estado" class="form-control form-select">
+                    <option value="EN_ESPERA" {% if form.estado.value == "EN_ESPERA" %}selected{% endif %}>En espera</option>
+                    <option value="OPERADO" {% if form.estado.value == "OPERADO" %}selected{% endif %}>Operado</option>
+                </select>
+                {% endif %}
+
+                {% if patient.estado == 'OPERADO' and form.instance.fecha_cambio_estado %}
+                <div class="mb-3">
+                    <label><strong>Fecha de cambio de estado:</strong></label>
+                    <span>{{ form.instance.fecha_cambio_estado|date:'Y-m-d H:i' }}</span>
+                </div>
+                {% endif %}
+
+                {% if form.creado_por %}
+                <div class="mb-3">
+                    <label><strong>Creado por:</strong></label>
+                    <span>
+                        {{ form.creado_por.value|default:"- Sin información -" }}
+                    </span>
+                </div>
+                {% endif %}
+
+                {% if form.actualizado_por %}
+                <div class="mb-3">
+                    <label><strong>Actualizado por:</strong></label>
+                    <span>
+                    {% if form.instance.actualizado_por %}
+                        {{ form.instance.actualizado_por.get_full_name|default:form.instance.actualizado_por.username }}
+                    {% else %}
+                        - Sin información -
+                    {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary">Actualizar paciente</button>
+            </form>
+
+            <h3 class="display-6 text-center">Historial de Puntajes</h3>
+            <div class="text-center mb-4">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-10 offset-md-1">
+                            <table class="table table-striped" cellpadding="5" cellspacing="0">
+                                <thead>
+                                    <tr style="background:#343a40; color:#fff;">
+                                        <th>Fecha cambio</th>
+                                        <th>Puntaje inicial</th>
+                                        <th>Puntaje tiempo</th>
+                                        <th>Puntaje total</th>
+                                        <th>Motivo cambio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for historial in historial_puntajes %}
+                                    <tr>
+                                        <td>{{ historial.fecha_cambio }}</td>
+                                        <td>{{ historial.puntaje_inicial }}</td>
+                                        <td>{{ historial.puntaje_tiempo }}</td>
+                                        <td>{{ historial.puntaje_total }}</td>
+                                        <td>{{ historial.get_motivo_cambio_display }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="5" class="text-center text-muted mt-4">Sin historial de puntajes</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" action="{% url 'delete_patient' paciente.id %}" class="mt-2">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger w-100" onclick="return confirm('¿Seguro que deseas desestimar este ingreso?');">Desestimar ingreso</button>
+            </form>
+            
+            {% elif searched %}
+            <p class="text-center text-muted mt-4">No se encontró ningún paciente con ese criterio.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

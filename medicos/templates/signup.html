@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<HTML:5>
+    <head>
+        <title>Registro de Medicos</title>
+    </head>
+    <body>
+        <h1>Registro de Medicos</h1>
+
+        {{ message }}
+
+        <form method="post" action="/signup/">
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <button type="submit">Registrarse</button>
+        </form>
+    </body>
+</HTML:5>
+
+{% endblock %}
