@@ -129,6 +129,30 @@
                         <span x-show="comentarioError" x-text="comentarioError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
                     </div>
 
+                    <div class="mb-3">
+                        <label for="id_creado_en">(*) Fecha de Creación:</label>
+                        <div class="d-flex flex-row gap-2" style="gap: 10px;">
+                            <select name="dia_creado" id="dia_creado" class="form-control form-select" style="max-width: 90px;">
+                                <option value="">Día</option>
+                                {% for d in dias %}
+                                <option value="{{ d }}" {% if request.POST.dia == d|stringformat:'s' %}selected{% endif %}>{{ d }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="mes_creado" id="mes_creado" class="form-control form-select" style="max-width: 110px;">
+                                <option value="">Mes</option>
+                                {% for m in meses %}
+                                <option value="{{ m }}" {% if request.POST.mes == m|stringformat:'s' %}selected{% endif %}>{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="anio_creado" id="anio_creado" class="form-control form-select" style="max-width: 110px;">
+                                <option value="">Año</option>
+                                {% for y in anios %}
+                                <option value="{{ y }}" {% if request.POST.anio == y|stringformat:'s' %}selected{% endif %}>{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
                     <h3 class="display-1 text-center">Criterios clínicos</h3>
                     {% if criterios_clinicos %}
                         {% regroup criterios_clinicos by eje as ejes_clinicos %}

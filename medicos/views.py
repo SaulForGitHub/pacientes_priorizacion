@@ -107,8 +107,8 @@ def operated_patients_list(request):
         request (HttpRequest): The HTTP request object.        
     Returns:
         HttpResponse: Renders 'operated_patients.html' template with a list of patients
-                     that have status "OPERADO" and are not soft-deleted,
-                     ordered by creation date and name.
+        that have status "OPERADO" and are not soft-deleted,
+        ordered by creation date and name.
     """
     operated_patients = Paciente.objects.filter(estado="OPERADO", eliminado_en__isnull=True).order_by('creado_en', 'nombre')
     return render(request, 'operated_patients.html', {
@@ -299,7 +299,7 @@ def about(request):
     """
     return render(request, 'about.html')
 
-
+@login_required
 def signup(request):
     """
     Handles user registration for the medical application.
@@ -571,6 +571,19 @@ def create_patient(request):
             except Exception:
                 errores.append("La fecha de nacimiento es inválida.")
 
+        anio_creado = request.POST.get('anio_creado')
+        mes_creado = request.POST.get('mes_creado')
+        dia_creado = request.POST.get('dia_creado')
+        if not (anio_creado and mes_creado and dia_creado):
+            errores.append("Debe seleccionar una fecha de creación.")
+        else:
+            try:
+                fecha_creacion = f"{anio_creado.zfill(4)}-{mes_creado.zfill(2)}-{dia_creado.zfill(2)}"
+                request.POST = request.POST.copy()
+                request.POST['fecha_creacion'] = fecha_creacion
+            except Exception:
+                errores.append("La fecha de creación es inválida.")
+
         # Validar selección de criterios por eje
         ejes_clinicos_ids = set(criterio.eje.id for criterio in criterios_clinicos)
         ejes_sociales_ids = set(criterio.eje.id for criterio in criterios_sociales)
@@ -634,7 +647,7 @@ def create_patient(request):
                 paciente = form.save(commit=False)
                 paciente.creado_por = request.user
                 from django.utils import timezone
-                paciente.creado_en = timezone.now()
+                paciente.creado_en = fecha_creacion
                 paciente.save()
 
                 # guardar historial de puntajes
@@ -719,13 +732,6 @@ def detail_patient(request, patient_id):
         historial_puntajes = HistorialPuntaje.objects.filter(paciente=paciente_encontrado).order_by('-puntaje_total')
 
         errores = []
-        campos_obligatorios = ['nombre', 'rut', 'estado']
-        for campo in campos_obligatorios:
-            valor = request.POST.get(campo)
-            if not valor:
-                errores.append(f"El campo '{campo}' es obligatorio.")
-            if campo == 'estado' and valor not in ['EN_ESPERA', 'OPERADO']:
-                errores.append("El estado seleccionado no es válido.")
 
         # Validar fecha de nacimiento
         anio = request.POST.get('anio')
@@ -741,8 +747,28 @@ def detail_patient(request, patient_id):
             except Exception:
                 errores.append("La fecha de nacimiento es inválida.")
 
-        # Validar criterios por eje (si aplica en edición, puedes ajustar si no corresponde)
-        # Si tienes criterios en la edición, agrega aquí la lógica similar a create_patient
+        # Validar fecha de creación
+        anio_creado = request.POST.get('anio_creado')
+        mes_creado = request.POST.get('mes_creado')
+        dia_creado = request.POST.get('dia_creado')
+        if not (anio_creado and mes_creado and dia_creado and anio_creado.strip() and mes_creado.strip() and dia_creado.strip()):
+            errores.append("Debe seleccionar una fecha de creación completa.")
+        else:
+            try:
+                fecha_creado = f"{str(anio_creado).zfill(4)}-{str(mes_creado).zfill(2)}-{str(dia_creado).zfill(2)} 00:00"
+                request.POST = request.POST.copy()
+                request.POST['creado_en'] = fecha_creado
+            except Exception:
+                errores.append("La fecha de creación es inválida.")
+
+        campos_obligatorios = ['nombre', 'rut', 'estado', 'creado_en']
+        for campo in campos_obligatorios:
+            valor = request.POST.get(campo)
+            if not valor:
+                errores.append(f"El campo '{campo}' es obligatorio.")
+            if campo == 'estado' and valor not in ['EN_ESPERA', 'OPERADO']:
+                errores.append("El estado seleccionado no es válido.")
+
         form = UpdatePatientForm(request.POST, instance=paciente_encontrado)
         if not form.is_valid():
             for field, field_errors in form.errors.items():
@@ -766,6 +792,7 @@ def detail_patient(request, patient_id):
                 paciente_actualizado.fecha_cambio_estado = timezone.now()
             paciente_actualizado.actualizado_por = request.user
             paciente_actualizado.actualizado_en = timezone.now()
+            paciente_actualizado.creado_en = form.cleaned_data['creado_en']
             paciente_actualizado.save()
             return redirect('waiting_patients_list')
 

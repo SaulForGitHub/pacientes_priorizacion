@@ -36,8 +36,8 @@
                         initial: {
                             rut: '{{ form.rut.value|escapejs }}',
                             nombre: '{{ form.nombre.value|escapejs }}',
-                            telefono: '{{ form.telefono.value|escapejs }}',
-                            correo: '{{ form.correo.value|escapejs }}',
+                            telefono: '{{ form.telefono.value|default_if_none:''|default:''|escapejs }}',
+                            correo: '{{ form.correo.value|default_if_none:""|escapejs }}',
                             direccion: '{{ form.direccion.value|escapejs }}',
                             comentario: '{{ form.comentario.value|escapejs }}'
                         }
@@ -110,7 +110,8 @@
 
                     <div class="mb-3">
                         <label for="id_telefono">Teléfono(s):</label>
-                        <input type="text" name="telefono" id="id_telefono" x-model="telefono" @input="validateTelefono()" :class="telefonoError ? 'border border-danger' : ''" class="form-control" value="{{ form.telefono.value|default_if_none:'' }}">
+                        <input type="text" name="telefono" id="id_telefono" x-model="telefono" @input="validateTelefono()" :class="telefonoError ? 'border border-danger' : ''" class="form-control" value="{{ form.telefono.value|default_if_none:''|default:'' }}">
+                                                <!-- El value ya está correcto, solo aseguramos el x-data inicial -->
                         <span x-show="telefonoError" x-text="telefonoError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
                     </div>
 
@@ -134,6 +135,48 @@
                             class="form-control" required cols="40" rows="5"></textarea>
                         <span x-show="comentarioError" x-text="comentarioError" style="color:red; font-size:0.9em; margin-left:10px;"></span>
                     </div>
+
+                        <div class="mb-3">
+                            <label for="id_creado_en">(*) Fecha de Creación:</label>
+                            <div class="d-flex flex-row gap-2" style="gap: 10px;">
+                                <select name="dia_creado" id="dia_creado" class="form-control form-select" style="max-width: 90px;">
+                                    <option value="">Día</option>
+                                    {% for d in dias %}
+                                    <option value="{{ d }}"
+                                        {% if request.POST.dia_creado %}
+                                            {% if request.POST.dia_creado == d|stringformat:'s' %}selected{% endif %}
+                                        {% else %}
+                                            {% if form.instance.creado_en and form.instance.creado_en.day == d %}selected{% endif %}
+                                        {% endif %}
+                                    >{{ d }}</option>
+                                    {% endfor %}
+                                </select>
+                                <select name="mes_creado" id="mes_creado" class="form-control form-select" style="max-width: 110px;">
+                                    <option value="">Mes</option>
+                                    {% for m in meses %}
+                                    <option value="{{ m }}"
+                                        {% if request.POST.mes_creado %}
+                                            {% if request.POST.mes_creado == m|stringformat:'s' %}selected{% endif %}
+                                        {% else %}
+                                            {% if form.instance.creado_en and form.instance.creado_en.month == m %}selected{% endif %}
+                                        {% endif %}
+                                    >{{ m }}</option>
+                                    {% endfor %}
+                                </select>
+                                <select name="anio_creado" id="anio_creado" class="form-control form-select" style="max-width: 110px;">
+                                    <option value="">Año</option>
+                                    {% for y in anios %}
+                                    <option value="{{ y }}"
+                                        {% if request.POST.anio_creado %}
+                                            {% if request.POST.anio_creado == y|stringformat:'s' %}selected{% endif %}
+                                        {% else %}
+                                            {% if form.instance.creado_en and form.instance.creado_en.year == y %}selected{% endif %}
+                                        {% endif %}
+                                    >{{ y }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
 
                     {% if form.estado %}
                     <label for="estado">(*) Estado:</label>

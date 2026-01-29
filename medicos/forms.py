@@ -151,7 +151,7 @@ class UpdatePatientForm(ModelForm):
     class Meta:
         model = Paciente
         fields = [
-            'nombre', 'rut', 'fecha_nacimiento', 'telefono', 'correo', 'direccion', 'estado', 'creado_por', 'actualizado_por', 'sexo', 'comentario'
+            'nombre', 'rut', 'fecha_nacimiento', 'telefono', 'correo', 'direccion', 'estado', 'creado_en', 'creado_por', 'actualizado_por', 'sexo', 'comentario'
         ]
 
     def __init__(self, *args, **kwargs):
@@ -163,10 +163,10 @@ class UpdatePatientForm(ModelForm):
             ('EN_ESPERA', 'En Espera'),
             ('OPERADO', 'Operado'),
         ]
-        # Campos obligatorios
-        required_fields = ['nombre', 'rut', 'fecha_nacimiento', 'sexo', 'comentario', 'estado',]
+        # Campos obligatorios (creado_en NO debe ser requerido, se setea manualmente en la vista)
+        required_fields = ['nombre', 'rut', 'fecha_nacimiento', 'sexo', 'comentario', 'estado']
         for field in self.fields:
-            if field in ['telefono', 'correo', 'direccion']:
+            if field in ['telefono', 'correo', 'direccion', 'creado_en']:
                 self.fields[field].required = False
             else:
                 self.fields[field].required = field in required_fields
